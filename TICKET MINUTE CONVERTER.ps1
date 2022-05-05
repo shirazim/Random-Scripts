@@ -1,3 +1,7 @@
+<#
+This was made to convert strings that look like: "4 days 3 hours 30 minutes" into minutes which would be 5970. 
+#>
+
 $tickets = import-csv C:\Users\michaelshirazi\Downloads\AllTickets.csv
 
 foreach ($t in $tickets){
