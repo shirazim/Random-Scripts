@@ -1,0 +1,79 @@
+#I use this script each week to calculate the ServiceNow ticket metrics for my team. I send the results off in an email each week. 
+
+
+$weekly = import-csv <CSV PATH>
+[int]$lastweek = get-content <PATH TO A TEXT FILE CONTAINING LAST WEEKS TOTAL> -Tail 1
+$backupCount = 0
+$primaryCount = 0
+$attCount = 0
+$apCount = 0
+$idownCount = 0
+$priority1Count = 0
+$priority2Count = 0
+$priority3Count = 0
+$priority4Count = 0
+$priority5Count = 0
+$RUcount = 0
+$total = $weekly.count
+
+
+foreach($case in $weekly){
+    if ($case.short_description -match "backup primary circuit" -or $case.short_description -match "backup data"){
+        $backupCount += 1
+        $case.short_description
+        } }
+
+    foreach($case in $weekly){ if ($case.short_description -match "primary data" -or $case.short_description -match "primary circuit" -and $case.short_description -notmatch "backup primary"
+    ){$primaryCount += 1
+    $case.short_description} }
+
+    foreach($case in $weekly){ if($case.short_description -match "AT&T" -or $case.short_description -match "ATT" )
+    { $attCount += 1 
+    $case.short_description} }
+    
+    foreach ($case in $weekly){ if ($case.short_description -match "access point" -or $case.short_description -match "DEMO Table ap")
+    {   $case.short_description
+        $apCount += 1} }
+
+    foreach ($case in $weekly){if($case.short_description -match "interface down")
+        {$idownCount += 1} }
+
+    foreach ($case in $weekly){if($case.short_description -match "router unreachable")
+        {$RUcount+= 1} }
+
+
+foreach($case in $weekly){
+    if ($case.priority -match "1"
+     ){$priority1Count += 1}
+    elseif($case.priority -match "2"
+    ){$priority2Count += 1}
+   elseif($case.priority -match "3"
+    ){$priority3Count += 1}
+   elseif($case.priority -match "4"
+   ){$priority4Count += 1 }
+  elseif($case.priority -match "5"
+  ){$priority5Count += 1}
+}
+
+$percentage = 100 * (($total - $lastweek) / $lastweek )
+$percentage = [math]::Round($percentage)
+$backuppercentage = 100 * ($backupCount/$total)
+$backuppercentage = [math]::Round($backuppercentage)
+$idpercentage = 100 * ($idownCount/$total)
+$idpercentage = [math]::Round($idpercentage)
+
+if ($total -gt $lastweek){$difference = "increase"
+}elseif ($total -lt $lastweek){$difference = "decrease"
+}else {$difference = "difference"}
+
+#The following prints out a template which I copy and paste into an email that is sent off to my team
+write-host "We Received a total of $total tickets which is a $percentage% $difference over the previous week`
+We received $priority1count P1s, $priority2count P2s, $priority3count P3s, $priority4count P4s and $priority5count P5s`
+$backupcount tickets were related to backup primary data circuits which accounted for $backuppercentage% of our entire queue`
+There were $primarycount primary data circuit down tickets`
+$attcount of our incidents required AT&T support`
+We had $idowncount interface down tickets which accounted for $idpercentage% of our queue `
+WE also received $RUcount router unreachable tickets and $apcount access point related incidents"
+ 
+$total | out-file <PATH TO A TEXT FILE THAT CONTAINS THE WEEKLY TOTALS> -Append
+
