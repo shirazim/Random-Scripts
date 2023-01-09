@@ -1,3 +1,7 @@
+<#
+This script was written to convert strings that look lie "1 day, 2 hours and 15 minutes" into minutes
+#>
+
 $Tickerrs = import-csv 'tickets.csv'
 
 foreach ($t in $Tickerrs){
